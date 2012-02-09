@@ -1,6 +1,7 @@
 from django.http import HttpResponse
 from django.http import HttpRequest
 from django.template import Context, loader
+from collections import defaultdict
 import cgi
 import datetime
 import urllib
@@ -12,26 +13,28 @@ import json
 import pprint
 import HTMLParser
 import suds
+import re
 
 from BeautifulSoup import BeautifulStoneSoup
 
-pp = pprint.PrettyPrinter(indent=4)
-valid_feeds = ['so','su','sf','hn']
-sites = {'so':'stackoverflow.com','su':'superuser.com','sf':'serverfault.com'}
+attack_re = '(?P<attacker>[\\w\\s]+)[()[\\]\\w\\s]*: Attacked (?P<defender>[\\w\\s]+)[()[\\]\\w\\s]* from [\\w\\s]+ to [\\w\\s]+, result: atk\\[[\\d,]+\\], def\\[[\\d,]+\\] : atk (?P<lost>-\\d+), def (?P<killed>-\\d+)'
+def filter2(log_string):
+    player = log_string.split(':')[0].split('(')[0]
+    armies = sum(int(n) for n in re.findall("(\d+)<BR>",log_string))
+    return [(player.strip(), armies)]
+def filter8(log_string):
+    m = re.match(attack_re, log_string)
+    if m:
+        return [(m.group('attacker').strip(), int(m.group('lost'))),(m.group('defender').strip(), int(m.group('killed')))]
+    else:
+        return [("ALERT!!!", log_string)]
+def filter12(log_string):
+    player = log_string.split(':')[0].split('(')[0]
+    armies = sum((int(n) for n in re.findall(': (\d+) armies.',log_string)))
+    return [(player.strip(), armies)]
 
-def index(HttpRequest, app):
-    try:
-        game = int(HttpRequest.GET.get('game','nope'))
-    except ValueError:
-        return return_default('')
-    print 'working!'
-    def write(length, st):
-        s = str(st)
-        return '<td>'+s[:length]+'</td>'
-    def filter_logs(logs, type, string):
-        for log in logs:
-            if log["type"] == type and log["data"].find(string) != -1:
-                yield log["data"]
+log_filter = {2:filter2, 8:filter8, 12:filter12}
+def get_all_logs(game):
     from suds.client import Client
     url = 'http://landgrab.net/landgrab/services/AuthService?wsdl'
     auth_client = Client(url)
@@ -41,10 +44,56 @@ def index(HttpRequest, app):
     log_client = Client(url)
     
     try:
-        all_logs = log_client.service.getAllLogs(key, game)
+        return log_client.service.getAllLogs(key, game)
     except suds.WebFault, e:
-        return return_default('sorry, game number appears to be invalid')
-        
+        return False
+
+def game_history(HttpRequest):
+    try:
+        game = int(HttpRequest.GET.get('game','nope'))
+    except ValueError:
+        return return_default('')
+    logs = get_all_logs(game)
+    if not logs:
+        return return_default('Sorry, game number seems to be invalid.')
+    history = defaultdict(list)
+      
+    for log in logs: 
+        if log['type'] in (2,8,12):
+            history[log['turnNumber']] += (log_filter[log['type']](log['data']))
+
+    deltas = defaultdict(lambda : defaultdict(int))
+    for turn, events in history.iteritems():
+        for player, delta in events:
+            deltas[turn][player] += delta
+            
+    totals = defaultdict(lambda : defaultdict(int))
+    players = set((p for p in deltas[0].keys()))
+
+    for turn, changes in deltas.iteritems():
+        for player in players:
+            if turn != 0:
+                totals[turn][player] = totals[turn-1][player] + changes.get(player, 0)
+            else:
+                totals[turn][player] = changes.get(player, 0) 
+    return return_default(str(totals)) 
+
+def index(HttpRequest):
+    try:
+        game = int(HttpRequest.GET.get('game','nope'))
+    except ValueError:
+        return return_default('')
+    def write(length, st):
+        s = str(st)
+        return '<td>'+s[:length]+'</td>'
+    def filter_logs(logs, type, string):
+        for log in logs:
+            if log["type"] == type and log["data"].find(string) != -1:
+                yield log["data"]
+    
+    all_logs = get_all_logs(game)
+    if not all_logs:
+        return return_default('Sorry, game number seems to be invalid.')
     kills = [
         (
             k[0].split(' (')[0], 
