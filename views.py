@@ -1,6 +1,7 @@
 from django.http import HttpResponse
 from django.http import HttpRequest
 from django.template import Context, loader
+from django.shortcuts import render_to_response
 from collections import defaultdict
 import cgi
 import datetime
@@ -73,11 +74,11 @@ def game_history(HttpRequest):
         if log['type'] in (1,2,8,12):
             data = log_filter[log['type']](log['data'])
             for player, change in data:
-                history[log['turnNumber']][player] += change
+                history[int(log['turnNumber'])][player] += change
 
     del logs
-    totals = defaultdict(lambda : defaultdict(int))
     players = set((p for p in history[0].keys()))
+    totals = dict(zip(history.keys(), (dict(zip(players, [0]*len(players))) for _ in history.keys())))
 
     for turn, changes in history.iteritems():
         for player in players:
@@ -85,6 +86,8 @@ def game_history(HttpRequest):
                 totals[turn][player] = totals[turn-1][player] + changes.get(player, 0)
             else:
                 totals[turn][player] = changes.get(player, 0) 
+    
+    return render_to_response('lg_game_history.html', {'totals': totals, 'players': players}) 
     return return_default(str(totals)) 
 
 def index(HttpRequest):

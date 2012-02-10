@@ -1,0 +1,19 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title> Death Grid | Not LandGrab </title>
+    <link rel="stylesheet" type="text/css" href="/media/deathgrid.css" />
+  </head>
+  <body>
+    <header>
+        <h1>Death Grid</h1>
+        <h2>Not Landgrab</h2>
+    </header>{% autoescape off %}
+    <p class='message'>{{ message }}</p>
+    <p>Enter a game number to see a death grid</p>
+    <form action="/landgrab/deathgrid" method="get">
+        <input type="text" name="game"></input>
+        <input type="submit" value="go"></input>
+    </form>{% endautoescape %}
+  </body>
+</html>

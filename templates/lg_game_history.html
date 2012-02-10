@@ -1,0 +1,37 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title> Game History | Not LandGrab </title>
+    <link rel="stylesheet" type="text/css" href="/media/deathgrid.css" />
+  </head>
+  <body>
+    <header>
+        <h1>Game History</h1>
+        <h2>Not Landgrab</h2>
+    </header>{% autoescape off %}
+    <p class='message'>{{ message }}</p>
+    {% if totals %}
+    <table class="history data">
+        <thead>
+        <th>Turn</th>
+        {% for player in players %}
+            <th>{{ player }}</th>
+        {% endfor %}
+        </thead>
+        {% for turn, data in totals.iteritems %}
+        <tr>
+        <td>{{ turn }}</td>
+            {% for player, total in data.iteritems %}
+            <td>{{ total }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %} 
+    <p>Enter a game number to see the history</p>
+    <form action="/landgrab/history" method="get">
+        <input type="text" name="game"></input>
+        <input type="submit" value="go"></input>
+    </form>{% endautoescape %}
+  </body>
+</html>
