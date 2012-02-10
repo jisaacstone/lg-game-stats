@@ -18,22 +18,33 @@ import re
 from BeautifulSoup import BeautifulStoneSoup
 
 attack_re = '(?P<attacker>[\\w\\s]+)[()[\\]\\w\\s]*: Attacked (?P<defender>[\\w\\s]+)[()[\\]\\w\\s]* from [\\w\\s]+ to [\\w\\s]+, result: atk\\[[\\d,]+\\], def\\[[\\d,]+\\] : atk (?P<lost>-\\d+), def (?P<killed>-\\d+)'
+assigned_re = "^[\w\s]+assigned to ([\w\s+]+)"
+
 def filter2(log_string):
     player = log_string.split(':')[0].split('(')[0]
     armies = sum(int(n) for n in re.findall("(\d+)<BR>",log_string))
     return [(player.strip(), armies)]
+
 def filter8(log_string):
     m = re.match(attack_re, log_string)
     if m:
         return [(m.group('attacker').strip(), int(m.group('lost'))),(m.group('defender').strip(), int(m.group('killed')))]
     else:
         return [("ALERT!!!", log_string)]
+
 def filter12(log_string):
     player = log_string.split(':')[0].split('(')[0]
     armies = sum((int(n) for n in re.findall(': (\d+) armies.',log_string)))
     return [(player.strip(), armies)]
 
-log_filter = {2:filter2, 8:filter8, 12:filter12}
+def filter1(log_string):
+    player = re.findall(assigned_re, log_string)
+    if player:
+        return [(player[0].strip(), 1)]
+    return player
+
+log_filter = {1:filter1, 2:filter2, 8:filter8, 12:filter12}
+
 def get_all_logs(game):
     from suds.client import Client
     url = 'http://landgrab.net/landgrab/services/AuthService?wsdl'
@@ -56,21 +67,19 @@ def game_history(HttpRequest):
     logs = get_all_logs(game)
     if not logs:
         return return_default('Sorry, game number seems to be invalid.')
-    history = defaultdict(list)
+    history = defaultdict(lambda : defaultdict(int))
       
     for log in logs: 
-        if log['type'] in (2,8,12):
-            history[log['turnNumber']] += (log_filter[log['type']](log['data']))
+        if log['type'] in (1,2,8,12):
+            data = log_filter[log['type']](log['data'])
+            for player, change in data:
+                history[log['turnNumber']][player] += change
 
-    deltas = defaultdict(lambda : defaultdict(int))
-    for turn, events in history.iteritems():
-        for player, delta in events:
-            deltas[turn][player] += delta
-            
+    del logs
     totals = defaultdict(lambda : defaultdict(int))
-    players = set((p for p in deltas[0].keys()))
+    players = set((p for p in history[0].keys()))
 
-    for turn, changes in deltas.iteritems():
+    for turn, changes in history.iteritems():
         for player in players:
             if turn != 0:
                 totals[turn][player] = totals[turn-1][player] + changes.get(player, 0)
