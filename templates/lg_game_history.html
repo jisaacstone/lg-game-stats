@@ -2,7 +2,10 @@
 <html>
   <head>
     <title> Game History | Not LandGrab </title>
-    <link rel="stylesheet" type="text/css" href="/media/deathgrid.css" />
+    <link rel="stylesheet" type="text/css" href="/media/css/deathgrid.css" />
+    <script type="text/javascript" source="/media/js/raphael.js"?=></script>
+    <script type="text/javascript" source="/media/js/g/g.raphael.js"?=></script>
+    <script type="text/javascript" source="/media/js/g/g.bar.js"?=></script>
   </head>
   <body>
     <header>
@@ -11,6 +14,8 @@
     </header>{% autoescape off %}
     <p class='message'>{{ message }}</p>
     {% if totals %}
+    <div id="r-chart">
+    </div>
     <table class="history data">
         <thead>
         <th>Turn</th>
