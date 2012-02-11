@@ -79,15 +79,16 @@ def game_history(HttpRequest):
     del logs
     players = set((p for p in history[0].keys()))
     totals = dict(zip(history.keys(), (dict(zip(players, [0]*len(players))) for _ in history.keys())))
-
+    graph_data = dict(zip(players, [[]]*len(players)))
     for turn, changes in history.iteritems():
         for player in players:
             if turn != 0:
                 totals[turn][player] = totals[turn-1][player] + changes.get(player, 0)
             else:
-                totals[turn][player] = changes.get(player, 0) 
-    
-    return render_to_response('lg_game_history.html', {'totals': totals, 'players': players}) 
+                totals[turn][player] = changes.get(player, 0)
+    for player in players:
+        graph_data[player] = [t for turn, data in totals.iteritems() for p, t in data.iteritems() if p == player]
+    return render_to_response('lg_game_history.html', {'message': graph_data, 'totals': totals, 'players': players, 'graph_data': graph_data}) 
     return return_default(str(totals)) 
 
 def index(HttpRequest):

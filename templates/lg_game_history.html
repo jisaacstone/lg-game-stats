@@ -3,9 +3,35 @@
   <head>
     <title> Game History | Not LandGrab </title>
     <link rel="stylesheet" type="text/css" href="/media/css/deathgrid.css" />
-    <script type="text/javascript" source="/media/js/raphael.js"?=></script>
-    <script type="text/javascript" source="/media/js/g/g.raphael.js"?=></script>
-    <script type="text/javascript" source="/media/js/g/g.bar.js"?=></script>
+    <script type="text/javascript" src="/media/js/g/raphael-min.js"></script>
+    <script type="text/javascript" src="/media/js/g/g.raphael.js"></script>
+    <script type="text/javascript" src="/media/js/g/g.line.js"></script>
+        <script>
+            window.onload = function () {
+                var r = Raphael("r-chart"),
+                    txtattr = { font: "12px sans-serif" };
+                
+                var x = [{% for t in totals.keys %}{{ t }}, {% endfor %}];
+                var y = {};
+                {% for player, data in graph_data.iteritems %}
+                    y['{{ player }}'] = [{% for item in data %}{{ item }},{% endfor %}]; 
+                {% endfor %} 
+                r.text(160, 10, "Simple Line Chart (1000 points)").attr(txtattr);
+                r.text(480, 10, "shade = true (10,000 points)").attr(txtattr);;
+                r.text(160, 250, "shade = true & nostroke = true (1,000,000 points)").attr(txtattr);
+                r.text(480, 250, "Symbols, axis and hover effect").attr(txtattr);
+
+                r.linechart(10, 10, 300, 220, x, [{% for player in players %}y['{{ player }}'],{% endfor %}]).hoverColumn(function () {
+                    this.set = r.set(
+                      {% for player in players %}
+                        r.circle(this.x, this.y['{{ player }}']){% if not forloop.last %},{% endif %}
+                      {% endfor %}
+                    );
+                }, function () {
+                    this.set.remove();
+                });
+            };
+        </script>
   </head>
   <body>
     <header>
