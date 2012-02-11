@@ -16,12 +16,9 @@
                 {% for player, data in graph_data.iteritems %}
                     y['{{ player }}'] = [{% for item in data %}{{ item }},{% endfor %}]; 
                 {% endfor %} 
-                r.text(160, 10, "Simple Line Chart (1000 points)").attr(txtattr);
-                r.text(480, 10, "shade = true (10,000 points)").attr(txtattr);;
-                r.text(160, 250, "shade = true & nostroke = true (1,000,000 points)").attr(txtattr);
-                r.text(480, 250, "Symbols, axis and hover effect").attr(txtattr);
+                r.text(160, 10, "troop count by turn").attr(txtattr);
 
-                r.linechart(10, 10, 300, 220, x, [{% for player in players %}y['{{ player }}'],{% endfor %}]).hoverColumn(function () {
+                r.linechart(10, 10, 800, 300, x, [{% for player in players %}y['{{ player }}'],{% endfor %}]).hoverColumn(function () {
                     this.set = r.set(
                       {% for player in players %}
                         r.circle(this.x, this.y['{{ player }}']){% if not forloop.last %},{% endif %}

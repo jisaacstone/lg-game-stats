@@ -3,18 +3,13 @@ from django.http import HttpRequest
 from django.template import Context, loader
 from django.shortcuts import render_to_response
 from collections import defaultdict
-import cgi
 import datetime
 import urllib
 import wsgiref.handlers
 import os
-import urllib2
-import BeautifulSoup
 import json
-import pprint
-import HTMLParser
-import suds
 import re
+import math
 
 from BeautifulSoup import BeautifulStoneSoup
 
@@ -29,7 +24,10 @@ def filter2(log_string):
 def filter8(log_string):
     m = re.match(attack_re, log_string)
     if m:
-        return [(m.group('attacker').strip(), int(m.group('lost'))),(m.group('defender').strip(), int(m.group('killed')))]
+        return [
+            (m.group('attacker').strip(), int(m.group('lost'))),
+            (m.group('defender').strip(), int(m.group('killed')))
+        ]
     else:
         return [("ALERT!!!", log_string)]
 
@@ -87,9 +85,13 @@ def game_history(HttpRequest):
             else:
                 totals[turn][player] = changes.get(player, 0)
     for player in players:
-        graph_data[player] = [t for turn, data in totals.iteritems() for p, t in data.iteritems() if p == player]
-    return render_to_response('lg_game_history.html', {'message': graph_data, 'totals': totals, 'players': players, 'graph_data': graph_data}) 
-    return return_default(str(totals)) 
+        graph_data[player] = [
+            math.log(n) if n>0 else 0 
+            for turn, data in totals.iteritems() 
+            for p, n in data.iteritems() 
+            if p == player
+        ]
+    return render_to_response('lg_game_history.html', {'totals': totals, 'players': players, 'graph_data': graph_data}) 
 
 def index(HttpRequest):
     try:
