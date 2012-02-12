@@ -176,7 +176,8 @@ def index(HttpRequest):
 def return_default(message):
     t = loader.get_template('lg_grid_default.html')
     c = Context({
-        'message':message
+        'message':message,
+        'pages':['deathgrid','history']
     })
     return HttpResponse(t.render(c),mimetype="text/html")
 

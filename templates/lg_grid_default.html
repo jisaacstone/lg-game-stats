@@ -6,14 +6,17 @@
   </head>
   <body>
     <header>
-        <h1>Death Grid</h1>
+        <h1>Game Stats</h1>
         <h2>Not Landgrab</h2>
     </header>{% autoescape off %}
     <p class='message'>{{ message }}</p>
-    <p>Enter a game number to see a death grid</p>
-    <form action="/landgrab/deathgrid" method="get">
+    {% for page in pages %}
+    <p>Enter a game number to see a {{ page }}</p>
+    <form action="/landgrab/{{ page }}" method="get">
         <input type="text" name="game"></input>
         <input type="submit" value="go"></input>
-    </form>{% endautoescape %}
+    </form>
+    {% endfor %}
+    {% endautoescape %}
   </body>
 </html>
