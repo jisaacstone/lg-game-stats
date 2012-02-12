@@ -12,21 +12,14 @@
                     txtattr = { font: "12px sans-serif" };
                 
                 var x = [{% for t in totals.keys %}{{ t }}, {% endfor %}];
+                var l = [{% for p in graph_data.keys %}'{{ p }}', {% endfor %}];
                 var y = {};
                 {% for player, data in graph_data.iteritems %}
                     y['{{ player }}'] = [{% for item in data %}{{ item }},{% endfor %}]; 
                 {% endfor %} 
                 r.text(160, 10, "troop count by turn").attr(txtattr);
 
-                r.linechart(10, 10, 800, 300, x, [{% for player in players %}y['{{ player }}'],{% endfor %}]).hoverColumn(function () {
-                    this.set = r.set(
-                      {% for player in players %}
-                        r.circle(this.x, this.y['{{ player }}']){% if not forloop.last %},{% endif %}
-                      {% endfor %}
-                    );
-                }, function () {
-                    this.set.remove();
-                });
+                r.linechart(10, 10, 800, 300, x, [{% for player in players %}y['{{ player }}'],{% endfor %}]).label(l);
             };
         </script>
   </head>

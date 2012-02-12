@@ -11,7 +11,9 @@ import json
 import re
 import math
 
-from BeautifulSoup import BeautifulStoneSoup
+import sys
+sys.path += ['constants']
+import constants
 
 attack_re = '(?P<attacker>[\\w\\s]+)[()[\\]\\w\\s]*: Attacked (?P<defender>[\\w\\s]+)[()[\\]\\w\\s]* from [\\w\\s]+ to [\\w\\s]+, result: atk\\[[\\d,]+\\], def\\[[\\d,]+\\] : atk (?P<lost>-\\d+), def (?P<killed>-\\d+)'
 assigned_re = "^[\w\s]+assigned to ([\w\s+]+)"
@@ -48,7 +50,7 @@ def get_all_logs(game):
     from suds.client import Client
     url = 'http://landgrab.net/landgrab/services/AuthService?wsdl'
     auth_client = Client(url)
-    key = auth_client.service.initiateSession('ieSi3zD867hF3jnQaeJ8b5fV8M04sZr46Fs')
+    key = auth_client.service.initiateSession(constants.LG_DEV_KEY)
         
     url = 'http://landgrab.net/landgrab/services/LogService?wsdl'
     log_client = Client(url)
@@ -62,7 +64,7 @@ def game_history(HttpRequest):
     try:
         game = int(HttpRequest.GET.get('game','nope'))
     except ValueError:
-        return return_default('')
+        return render_to_response('lg_game_history.html',{'message':'welcome!'})
     logs = get_all_logs(game)
     if not logs:
         return return_default('Sorry, game number seems to be invalid.')
