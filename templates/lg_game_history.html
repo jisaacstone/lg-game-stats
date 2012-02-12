@@ -19,7 +19,19 @@
                 {% endfor %} 
                 r.text(160, 10, "troop count by turn").attr(txtattr);
 
-                r.linechart(10, 10, 800, 300, x, [{% for player in players %}y['{{ player }}'],{% endfor %}]).label(l);
+                r.linechart(10, 10, 
+                    800, 300, 
+                    x, [{% for player in players %}y['{{ player }}'],{% endfor %}]
+                ).hoverColumn(function () {
+                    this.tags = r.set();
+                    for (var i = 0, ii = this.y.length; i < ii; i++) {
+                        this.tags.push(
+                            r.tag(this.x, this.y[i], l[i], 160, 10).insertBefore(this).attr([{ fill: "#fff" }, { fill: document.getElementsByTagName("path")[i].getAttribute("stroke")}])
+                        );
+                    }
+                }, function () {
+                    this.tags && this.tags.remove();
+                }); 
             };
         </script>
   </head>

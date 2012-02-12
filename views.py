@@ -88,7 +88,7 @@ def game_history(HttpRequest):
                 totals[turn][player] = changes.get(player, 0)
     for player in players:
         graph_data[player] = [
-            math.log(n) if n>0 else 0 
+            math.log(n) if n>0 else 0.9 
             for turn, data in totals.iteritems() 
             for p, n in data.iteritems() 
             if p == player
