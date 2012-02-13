@@ -19,6 +19,13 @@ import constants
 
 attack_re = '(?P<attacker>[\\w\\s]+)[()[\\]\\w\\s]*: Attacked (?P<defender>[\\w\\s]+)[()[\\]\\w\\s]* from [\\w\\s]+ to [\\w\\s]+, result: atk\\[[\\d,]+\\], def\\[[\\d,]+\\] : atk (?P<lost>-\\d+), def (?P<killed>-\\d+)'
 assigned_re = "^[\w\s]+assigned to ([\w\s+]+)"
+chown_re = "([\\w\\s]+)[\\w\\s\\[\\]()]* changed ownership of [\\w\\s]+ to ([\\w\\s]+)"
+
+def filter1(log_string):
+    player = re.findall(assigned_re, log_string)
+    if player:
+        return [(player[0].strip(), 1)]
+    return player
 
 def filter2(log_string):
     player = log_string.split(':')[0].split('(')[0]
@@ -40,13 +47,14 @@ def filter12(log_string):
     armies = sum((int(n) for n in re.findall(': (\d+) armies.',log_string)))
     return [(player.strip(), armies)]
 
-def filter1(log_string):
-    player = re.findall(assigned_re, log_string)
-    if player:
-        return [(player[0].strip(), 1)]
-    return player
+def filter13(log_string):
+    match = re.findall(chown_re, log_string)
+    if not match:
+        return []
+    c_from, c_to = match[0]
+    return [(c_from, -1),(c_to, +1)]
 
-log_filter = {1:filter1, 2:filter2, 8:filter8, 12:filter12}
+log_filter = {1:filter1, 2:filter2, 8:filter8, 12:filter12, 13:filter13}
 
 def get_all_logs(game):
     url = 'http://landgrab.net/landgrab/services/AuthService?wsdl'
@@ -72,7 +80,7 @@ def game_history(HttpRequest):
     history = defaultdict(lambda : defaultdict(int))
       
     for log in logs: 
-        if log['type'] in (1,2,8,12):
+        if log['type'] in (1,2,8,12,13):
             data = log_filter[log['type']](log['data'])
             for player, change in data:
                 history[int(log['turnNumber'])][player] += change
