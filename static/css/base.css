@@ -18,5 +18,23 @@ table{
 td{
     text-align: right;    
     border-bottom: 2px dashed #567;
-    min-width: 4em;
     }
+th{
+    position: relative;
+    width: 2em;
+    height: 11em;
+    text-align: left;
+}    
+.box_rotate {
+    -webkit-transform: rotate(-30deg);  
+    -moz-transform: rotate(-30deg);  
+    -ms-transform: rotate(-30deg);  
+    -o-transform: rotate(-30deg);  
+    transform: rotate(-30deg);
+    filter: progid:DXImageTransform.Microsoft.Matrix(
+         M11=0.8660254037844387, M12=0.49999999999999994, M21=-0.49999999999999994, M22=0.8660254037844387, sizingMethod='auto expand');
+    zoom: 1;
+    position: absolute;
+    width: 20em;
+}
+

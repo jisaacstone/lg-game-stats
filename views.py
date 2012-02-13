@@ -52,7 +52,7 @@ def filter13(log_string):
     if not match:
         return []
     c_from, c_to = match[0]
-    return [(c_from, -1),(c_to, +1)]
+    return [(c_from.strip(), -1),(c_to.strip(), +1)]
 
 log_filter = {1:filter1, 2:filter2, 8:filter8, 12:filter12, 13:filter13}
 

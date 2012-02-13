@@ -3,6 +3,7 @@
   <head>
     <title> Game History | Not LandGrab </title>
     <link rel="stylesheet" type="text/css" href="/static/css/base.css" />
+    <link rel="stylesheet" type="text/css" href="/static/css/history.css" />
     <script type="text/javascript" src="/media/js/g/raphael-min.js"></script>
     <script type="text/javascript" src="/media/js/g/g.raphael.js"></script>
     <script type="text/javascript" src="/media/js/g/g.line.js"></script>
@@ -20,7 +21,7 @@
                 r.text(160, 10, "troop count by turn").attr(txtattr);
 
                 r.linechart(10, 10, 
-                    800, 300, 
+                    800, 342, 
                     x, [{% for player in players %}y['{{ player }}'],{% endfor %}]
                 ).hoverColumn(function () {
                     this.tags = r.set();
@@ -52,9 +53,9 @@
     </div>
     <table class="history data">
         <thead>
-        <th>Turn</th>
+        <th> <span class="box_rotate">Turn</span> </th>
         {% for player in players %}
-            <th>{{ player }}</th>
+            <th> <span class="box_rotate">{{ player }}</span> </th>
         {% endfor %}
         </thead>
         {% for turn, data in totals.iteritems %}
