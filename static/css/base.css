@@ -1,0 +1,22 @@
+body{
+    margin: 0 15%;
+    }
+h1{
+    margin: 15% 0 0;
+    color: #7C9;
+    text-shadow: 0 1px 0 rgba(0,0,0,0.5);
+    }
+h2{
+    margin: 0 0 0 5%;
+    color: #273;
+    font-size: 85%;
+    }
+table{
+    border-collapse: separate;
+    border-spacing: 10px;
+    }
+td{
+    text-align: right;    
+    border-bottom: 2px dashed #567;
+    min-width: 4em;
+    }
