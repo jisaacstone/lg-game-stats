@@ -3,6 +3,8 @@ from django.http import HttpRequest
 from django.template import Context, loader
 from django.shortcuts import render_to_response
 from collections import defaultdict
+from suds.client import Client
+import suds
 import datetime
 import urllib
 import wsgiref.handlers
@@ -47,7 +49,6 @@ def filter1(log_string):
 log_filter = {1:filter1, 2:filter2, 8:filter8, 12:filter12}
 
 def get_all_logs(game):
-    from suds.client import Client
     url = 'http://landgrab.net/landgrab/services/AuthService?wsdl'
     auth_client = Client(url)
     key = auth_client.service.initiateSession(constants.LG_DEV_KEY)
@@ -57,7 +58,7 @@ def get_all_logs(game):
     
     try:
         return log_client.service.getAllLogs(key, game)
-    except suds.WebFault, e:
+    except suds.WebFault:
         return False
 
 def game_history(HttpRequest):
@@ -88,7 +89,7 @@ def game_history(HttpRequest):
                 totals[turn][player] = changes.get(player, 0)
     for player in players:
         graph_data[player] = [
-            math.log(n) if n>0 else 0.9 
+            math.log(n+1) if n>0 else 0.5 
             for turn, data in totals.iteritems() 
             for p, n in data.iteritems() 
             if p == player
