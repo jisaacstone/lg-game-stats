@@ -3,7 +3,7 @@ from suds.client import Client
 import re
 import sys
 
-troop_delta_log_types = set((1,2,8,12,13))
+troop_delta_log_types = set((1,2,8,12,13,15))
 name_re = '[\\w\\s_-]+'
 borged_re = '[()[\\]\\w\\s,_-]*'
 territory_re = '[\\w\\s.-_]+'
