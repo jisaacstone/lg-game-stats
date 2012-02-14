@@ -12,80 +12,25 @@ import os
 import json
 import re
 import math
-
-import sys
-sys.path += ['constants']
-import constants
-
-attack_re = '(?P<attacker>[\\w\\s]+)[()[\\]\\w\\s]*: Attacked (?P<defender>[\\w\\s]+)[()[\\]\\w\\s]* from [\\w\\s]+ to [\\w\\s]+, result: atk\\[[\\d,]+\\], def\\[[\\d,]+\\] : atk (?P<lost>-\\d+), def (?P<killed>-\\d+)'
-assigned_re = "^[\w\s]+assigned to ([\w\s+]+)"
-chown_re = "([\\w\\s]+)[\\w\\s\\[\\]()]* changed ownership of [\\w\\s]+ to ([\\w\\s]+)"
-
-def filter1(log_string):
-    player = re.findall(assigned_re, log_string)
-    if player:
-        return [(player[0].strip(), 1)]
-    return player
-
-def filter2(log_string):
-    player = log_string.split(':')[0].split('(')[0]
-    armies = sum(int(n) for n in re.findall("(\d+)<BR>",log_string))
-    return [(player.strip(), armies)]
-
-def filter8(log_string):
-    m = re.match(attack_re, log_string)
-    if m:
-        return [
-            (m.group('attacker').strip(), int(m.group('lost'))),
-            (m.group('defender').strip(), int(m.group('killed')))
-        ]
-    else:
-        return [("ALERT!!!", log_string)]
-
-def filter12(log_string):
-    player = log_string.split(':')[0].split('(')[0]
-    armies = sum((int(n) for n in re.findall(': (\d+) armies.',log_string)))
-    return [(player.strip(), armies)]
-
-def filter13(log_string):
-    match = re.findall(chown_re, log_string)
-    if not match:
-        return []
-    c_from, c_to = match[0]
-    return [(c_from.strip(), -1),(c_to.strip(), +1)]
-
-log_filter = {1:filter1, 2:filter2, 8:filter8, 12:filter12, 13:filter13}
-
-def get_all_logs(game):
-    url = 'http://landgrab.net/landgrab/services/AuthService?wsdl'
-    auth_client = Client(url)
-    key = auth_client.service.initiateSession(constants.LG_DEV_KEY)
-        
-    url = 'http://landgrab.net/landgrab/services/LogService?wsdl'
-    log_client = Client(url)
-    
-    try:
-        return log_client.service.getAllLogs(key, game)
-    except suds.WebFault:
-        return False
+import landgrab.utils as lg_utils
 
 def game_history(HttpRequest):
     try:
         game = int(HttpRequest.GET.get('game','nope'))
     except ValueError:
         return render_to_response('lg_game_history.html',{'message':'welcome!'})
-    logs = get_all_logs(game)
-    if not logs:
-        return return_default('Sorry, game number seems to be invalid.')
+    
+    auth_helper = lg_utils.AuthHelper()
+    log_helper = lg_utils.LogHelper(auth_helper.key, game)
     history = defaultdict(lambda : defaultdict(int))
+    try:
+        for log_type in lg_utils.troop_delta_log_types:
+            for log_data in log_helper.get_troop_delta_by_type(log_type):
+                for player, change in log_data['data']:
+                    history[int(log_data['turn'])][player] += change
+    except TypeError:
+        return render_to_response('lg_game_history.html',{'message':log_data}) 
       
-    for log in logs: 
-        if log['type'] in (1,2,8,12,13):
-            data = log_filter[log['type']](log['data'])
-            for player, change in data:
-                history[int(log['turnNumber'])][player] += change
-
-    del logs
     players = set((p for p in history[0].keys()))
     totals = dict(zip(history.keys(), (dict(zip(players, [0]*len(players))) for _ in history.keys())))
     graph_data = dict(zip(players, [[]]*len(players)))
