@@ -61,8 +61,10 @@ def index(HttpRequest):
         for log in logs:
             if log["type"] == type and log["data"].find(string) != -1:
                 yield log["data"]
-    
-    all_logs = get_all_logs(game)
+   
+    auth_helper = lg_utils.AuthHelper()
+    log_helper = lg_utils.LogHelper(auth_helper.key, game)
+    all_logs = log_helper.get_all_logs()
     if not all_logs:
         return return_default('Sorry, game number seems to be invalid.')
     kills = [

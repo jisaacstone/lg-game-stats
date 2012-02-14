@@ -95,7 +95,9 @@ class LogHelper(object):
         if type not in troop_delta_log_types:
             return ['invailid log type']
         logs = self.get_logs_by_type(type)
-        if not logs or isinstance(logs, basestring):
+        if not logs:
+            return []
+        if isinstance(logs, basestring):
             return [logs]
         return map(lambda x: {'turn': x['turnNumber'], 'data': filter_troop_delta(x)}, logs)
 
