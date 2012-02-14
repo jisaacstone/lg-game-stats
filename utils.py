@@ -31,7 +31,7 @@ def filter_troop_delta(log):
                 significant_data += [(m.group('defender').strip(), int(m.group('killed')))]
             return significant_data
         else:
-            return [("ALERT!!! Parser Failed!", log_string)]
+            return [("ALERT!!! Parser 8 Failed! Please Notify the Developers.", log_string)]
     elif log_type == 12:
         player = log_string.split(':')[0].split('(')[0]
         armies = sum((int(n) for n in re.findall(': (\d+) armies.',log_string)))
@@ -39,7 +39,7 @@ def filter_troop_delta(log):
     elif log_type == 13:
         match = re.findall(chown_re, log_string)
         if not match:
-            return []
+            return [("ALERT!!! Parser 13 Failed! Please Notify the Developers.", log_string)]
         c_from, c_to = match[0]
         return [(c_from.strip(), -1),(c_to.strip(), +1)]
     
