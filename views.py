@@ -20,7 +20,7 @@ def game_history(HttpRequest):
     except ValueError:
         return render_to_response('lg_game_history.html',{'message':'welcome!'})
     
-    auth_helper = lg_utils.AuthHelper()
+    auth_helper = lg_utils.AuthHelper(HttpRequest.session)
     log_helper = lg_utils.LogHelper(auth_helper.key, game)
     history = defaultdict(lambda : defaultdict(int))
     try:

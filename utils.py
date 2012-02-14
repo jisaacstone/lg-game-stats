@@ -1,10 +1,11 @@
 import suds
 from suds.client import Client
 import re
+import sys
 
 troop_delta_log_types = set((1,2,8,12,13))
 name_re = '[\\w\\s_-]+'
-borged_re = '[()[\\]\\w\\s_-]*'
+borged_re = '[()[\\]\\w\\s,_-]*'
 territory_re = '[\\w\\s.-_]+'
 attack_re = "(?P<attacker>{0}){1}: Attacked (?P<defender>{0}){1} from {2} to {2}, result: atk\\[[\\d,]+\\], def\\[[\\d,]+\\] : atk (?P<lost>-\\d+), def (?P<killed>-\\d+)".format(name_re, borged_re, territory_re)
 assigned_re = "^{0}assigned to ({1})".format(territory_re, name_re)
@@ -57,12 +58,16 @@ def filter_troop_delta(log):
 class AuthHelper(object):
     api_url = 'http://landgrab.net/landgrab/services/AuthService?wsdl'
     
-    def __init__(self):
-        import sys
-        sys.path += ['constants']
-        import constants
-        self.client = Client(self.api_url)
-        self.key = self.client.service.initiateSession(constants.LG_DEV_KEY)
+    def __init__(self, session):
+        if session.get('session_key'):
+            self.key = session.get('session_key')
+        else:    
+            sys.path += ['constants']
+            import constants
+            a_client = Client(self.api_url)
+            self.key = a_client.service.initiateSession(constants.LG_DEV_KEY)
+            session['session_key'] = self.key
+            session.set_expiry(60*60*2)
 
 class LogHelper(object):
     """methods for retrieveing and sorting logs from the landgrab api"""
