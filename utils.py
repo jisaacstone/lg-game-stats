@@ -58,16 +58,17 @@ def filter_troop_delta(log):
 class AuthHelper(object):
     api_url = 'http://landgrab.net/landgrab/services/AuthService?wsdl'
     
-    def __init__(self, session):
-        if session.get('session_key'):
+    def __init__(self, session = None):
+        if session and session.get('session_key'):
             self.key = session.get('session_key')
         else:    
             sys.path += ['constants']
             import constants
             a_client = Client(self.api_url)
             self.key = a_client.service.initiateSession(constants.LG_DEV_KEY)
-            session['session_key'] = self.key
-            session.set_expiry(60*60*2)
+            if session:
+                session['session_key'] = self.key
+                session.set_expiry(60*60*2)
 
 class LogHelper(object):
     """methods for retrieveing and sorting logs from the landgrab api"""
@@ -121,3 +122,16 @@ class LogHelper(object):
             return self.client.service.getAllLogs(self.key, self.game)
         except suds.WebFault:
             return False
+
+class GameHelper(object):
+    """methods for retrieveing and sorting game data from the landgrab api"""
+    api_url = 'http://landgrab.net/landgrab/services/GameListService?wsdl'
+
+    def __init__(self, api_key):
+        self.client = Client(self.api_url)
+        self.key = api_key
+
+    def details(self, game_number):
+        return self.client.service.getGameDetails(self.key, game_number)
+
+
