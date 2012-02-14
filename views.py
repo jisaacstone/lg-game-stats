@@ -63,39 +63,30 @@ def index(HttpRequest):
             if log["type"] == type and log["data"].find(string) != -1:
                 yield log["data"]
    
-    auth_helper = lg_utils.AuthHelper()
+    auth_helper = lg_utils.AuthHelper(HttpRequest.session)
     log_helper = lg_utils.LogHelper(auth_helper.key, game)
-    all_logs = log_helper.get_all_logs()
-    if not all_logs:
-        return return_default('Sorry, game number seems to be invalid.')
+    
     kills = [
         (
             k[0].split(' (')[0], 
             k[1].split(' (')[0]
-        ) for k in [
-            l.split(': has conquered ') for l in filter_logs(all_logs, 11, 'conquered')
-        ]
-    ]
-    nicks_raw = [
-        (
-            n[1].split(' from ')[0],
-            n[0][18:]
-        ) for n in [
-            l.split(' as ') for l in filter_logs(all_logs, 1, 'Attempting to add') 
-        ]
-    ]
-    nicks = dict(
-        zip(
-            [n[0] for n in nicks_raw],
-            [n[1] for n in nicks_raw]
+        ) for k in (
+            l['data'].split(': has conquered ') for l in log_helper.get_logs_by_type(11)
         )
-    )
+    ]
+    nicks = {
+            n[1].split(' from ')[0]:n[0][18:]
+        for n in (
+            l.split(' as ') for l in filter_logs(log_helper.get_logs_by_type(1), 1, 'Attempting to add') 
+        )
+    }
     attacks = []
-    for a in filter_logs(all_logs, 8, ' from'):
-        s = a.split(':')
+    for a in log_helper.get_logs_by_type(8):
+        s = a['data'].split(':')
         attacks.append(dict(
             attacker=[s[0][:s[0].find(' (') if s[0].find(' (') != -1 else None],int(s[3].split(',')[0][5:])],
-            defender=[s[1][10:s[1].find(' (') if s[1].find(' (') != -1 else s[1].find(' from')],int(s[3].split(',')[1][5:])]))
+            defender=[s[1][10:s[1].find(' (') if s[1].find(' (') != -1 else s[1].find(' from')],int(s[3].split(',')[1][5:])]
+        ))
     
 
     players = list(set([a["defender"][0] for a in attacks]))
