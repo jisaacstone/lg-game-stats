@@ -3,9 +3,12 @@ from suds.client import Client
 import re
 
 troop_delta_log_types = set((1,2,8,12,13))
-attack_re = '(?P<attacker>[\\w\\s]+)[()[\\]\\w\\s]*: Attacked (?P<defender>[\\w\\s]+)[()[\\]\\w\\s]* from [\\w\\s]+ to [\\w\\s]+, result: atk\\[[\\d,]+\\], def\\[[\\d,]+\\] : atk (?P<lost>-\\d+), def (?P<killed>-\\d+)'
-assigned_re = "^[\w\s]+assigned to ([\w\s+]+)"
-chown_re = "([\\w\\s]+)[\\w\\s\\[\\]()]* changed ownership of [\\w\\s]+ to ([\\w\\s]+)"
+name_re = '[\\w\\s_-]+'
+borged_re = '[()[\\]\\w\\s_-]*'
+territory_re = '[\\w\\s.-_]+'
+attack_re = "(?P<attacker>{0}){1}: Attacked (?P<defender>{0}){1} from {2} to {2}, result: atk\\[[\\d,]+\\], def\\[[\\d,]+\\] : atk (?P<lost>-\\d+), def (?P<killed>-\\d+)".format(name_re, borged_re, territory_re)
+assigned_re = "^{0}assigned to ({1})".format(territory_re, name_re)
+chown_re = "({0}){1} changed ownership of {2} to ({0})".format(territory_re, borged_re, name_re)
 
 def filter_troop_delta(log):
     """ returns a list of tuples in the format
@@ -18,10 +21,6 @@ def filter_troop_delta(log):
         if player:
             return [(player[0].strip(), 1)]
         return player
-    elif log_type == 2:    
-        player = log_string.split(':')[0].split('(')[0]
-        armies = sum(int(n) for n in re.findall("(\d+)<BR>",log_string))
-        return [(player.strip(), armies)]
     elif log_type == 8:
         m = re.match(attack_re, log_string)
         if m:
@@ -32,7 +31,7 @@ def filter_troop_delta(log):
                 significant_data += [(m.group('defender').strip(), int(m.group('killed')))]
             return significant_data
         else:
-            return [("ALERT!!!", log_string)]
+            return [("ALERT!!! Parser Failed!", log_string)]
     elif log_type == 12:
         player = log_string.split(':')[0].split('(')[0]
         armies = sum((int(n) for n in re.findall(': (\d+) armies.',log_string)))
@@ -43,6 +42,16 @@ def filter_troop_delta(log):
             return []
         c_from, c_to = match[0]
         return [(c_from.strip(), -1),(c_to.strip(), +1)]
+    
+    player = log_string.split(':')[0].split('(')[0]
+
+    if log_type == 2:
+        armies = sum((int(l.split(':')[1]) for l in log['machineData'].split(',')))
+        return [(player.strip(), armies)]
+    elif log_type == 15:
+        armies = log['machineData'].count(',') + 1
+        return [(player.strip(), armies)]
+
     return []
 
 class AuthHelper(object):
