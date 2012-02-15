@@ -3,7 +3,7 @@ from suds.client import Client
 import re
 import sys
 
-troop_delta_log_types = set((1,2,8,12,13,15))
+troop_delta_log_types = set((1,2,8,9,12,13,15))
 name_re = '[\\w\\s_-]+'
 borged_re = '[()[\\]\\w\\s,_-]*'
 territory_re = '[\\w\\s.-_]+'
@@ -33,6 +33,8 @@ def filter_troop_delta(log):
             return significant_data
         else:
             return [("ALERT!!! Parser 8 Failed! Please Notify the Developers.", log_string)]
+    elif log_type == 9:
+        pass
     elif log_type == 12:
         player = log_string.split(':')[0].split('(')[0]
         armies = sum((int(n) for n in re.findall(': (\d+) armies.',log_string)))
@@ -116,7 +118,26 @@ class LogHelper(object):
             return []
         if isinstance(logs, basestring):
             return [logs]
-        return map(lambda x: {'turn': x['turnNumber'], 'data': filter_troop_delta(x)}, logs)
+        if type != 9:
+            return map(lambda x: {'turn': x['turnNumber'], 'data': filter_troop_delta(x)}, logs)
+        conq_logs = self.get_conquers()
+        r_data = []
+        for i in xrange(len(logs)):
+            turn = logs[i]['turnNumber']
+            players = conq_logs[i]['players']
+            troops = sum(map(int, logs[i]['machineData'].split(':')[6::4]))
+            r_data += [{'turn': turn, 'data':[(players[0], troops),(players[1], -troops)]}]
+        return r_data   
+
+    def get_conquers(self):
+        """turn nuber and players conquered"""
+        return [
+            {
+                'players':[p.split(' (')[0] for p in l['data'].split(': has conquered ')],
+                'turn': l['turnNumber']
+            } 
+            for l in self.get_logs_by_type(11)
+        ]
 
     def get_all_logs(self):
         """returns all logs of all types for the game"""
@@ -128,12 +149,11 @@ class LogHelper(object):
 class GameHelper(object):
     """methods for retrieveing and sorting game data from the landgrab api"""
     api_url = 'http://landgrab.net/landgrab/services/GameListService?wsdl'
+    details = None
 
-    def __init__(self, api_key):
+    def __init__(self, api_key, game_number = None):
         self.client = Client(self.api_url)
         self.key = api_key
-
-    def details(self, game_number):
-        return self.client.service.getGameDetails(self.key, game_number)
-
-
+        self.game = game_number
+        if self.game:
+            self.details = self.client.service.getGameDetails(self.key, game_number)

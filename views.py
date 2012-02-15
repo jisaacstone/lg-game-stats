@@ -21,17 +21,23 @@ def game_history(HttpRequest):
         return render_to_response('lg_game_history.html',{'message':'welcome!'})
     
     auth_helper = lg_utils.AuthHelper(HttpRequest.session)
+    game_helper = lg_utils.GameHelper(auth_helper.key, game)
     log_helper = lg_utils.LogHelper(auth_helper.key, game)
+    logs_to_fetch = lg_utils.troop_delta_log_types
+    if not game_helper.details.capitols:
+        logs_to_fetch.remove(9)
+    if not game_helper.details.teamGame:
+        logs_to_fetch.remove(13)
     history = defaultdict(lambda : defaultdict(int))
     try:
-        for log_type in lg_utils.troop_delta_log_types:
+        for log_type in logs_to_fetch:
             for log_data in log_helper.get_troop_delta_by_type(log_type):
                 for player, change in log_data['data']:
                     history[int(log_data['turn'])][player] += change
     except TypeError:
         return render_to_response('lg_game_history.html',{'message':log_data}) 
       
-    players = set((p for p in history[0].keys()))
+    players = set((p['nickname'].split(' (')[0] for p in game_helper.details.players))
     totals = dict(zip(history.keys(), (dict(zip(players, [0]*len(players))) for _ in history.keys())))
     graph_data = dict(zip(players, [[]]*len(players)))
     for turn, changes in history.iteritems():
@@ -41,6 +47,11 @@ def game_history(HttpRequest):
             else:
                 totals[turn][player] = changes.get(player, 0)
         last_turn = turn
+    for conquer in log_helper.get_conquers():
+        if totals[conquer['turn']][conquer['players'][1]] != 0:
+            for turn in history.keys():
+                if turn >= conquer['turn']:
+                    totals[turn][conquer['players'][1]] = 0
     for player in players:
         graph_data[player] = [
             math.log(n+1) if n>0 else 0.5 
