@@ -47,6 +47,8 @@ def filter_troop_delta(log):
     player = log_string.split(':')[0].split('(')[0]
 
     if log_type == 2:
+        if log['machineData'] == None:
+            return []
         armies = sum((int(l.split(':')[1]) for l in log['machineData'].split(',')))
         return [(player.strip(), armies)]
     elif log_type == 15:
