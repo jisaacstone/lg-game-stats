@@ -4,6 +4,7 @@
     <title> Game History | Not LandGrab </title>
     <link rel="stylesheet" type="text/css" href="/static/css/base.css" />
     <link rel="stylesheet" type="text/css" href="/static/css/history.css" />
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
     <script type="text/javascript" src="/media/js/g/raphael-min.js"></script>
     <script type="text/javascript" src="/media/js/g/g.raphael.js"></script>
     <script type="text/javascript" src="/media/js/g/g.line.js"></script>
@@ -26,9 +27,11 @@
                 ).hoverColumn(function () {
                     this.tags = r.set();
                     for (var i = 0, ii = this.y.length; i < ii; i++) {
-                        this.tags.push(
-                            r.tag(this.x, this.y[i], l[i], 160, 10).insertBefore(this).attr([{ fill: "#fff" }, { fill: document.getElementsByTagName("path")[i].getAttribute("stroke")}])
-                        );
+                        if($('path').eq(i).css('display') != 'none'){
+                            this.tags.push(
+                                r.tag(this.x, this.y[i], l[i], 160, 10).insertBefore(this).attr([{ fill: "#fff" }, { fill: $("path").eq(i).attr("stroke")}])
+                            );
+                        }
                     }
                 }, function () {
                     this.tags && this.tags.remove();
@@ -39,6 +42,20 @@
                 for (i=0; i<rects.length; i++){
                     rects[i].setAttribute('width', w);
                 } 
+                // visibility toggle logic
+                $('path').toggle(function(){
+                    $(this).hide()
+                    $('th').eq($(this).index()-2).css('color', 'grey');
+                }, function(){
+                    $(this).show()
+                    $('th').eq($(this).index()-2).css('color', 'black');
+                });
+                $('th').not(':first-child').click(function(){$('path').eq($(this).index()-1).click()});
+                $('th').not(':first-child').hover(function(){
+                    $(this).find('span').css('text-decoration', 'underline')
+                },function(){
+                    $(this).find('span').css('text-decoration','none')
+                });
             };
         </script>
   </head>
