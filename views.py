@@ -23,7 +23,7 @@ def game_history(HttpRequest):
     auth_helper = lg_utils.AuthHelper(HttpRequest.session)
     game_helper = lg_utils.GameHelper(auth_helper.key, game)
     log_helper = lg_utils.LogHelper(auth_helper.key, game)
-    logs_to_fetch = lg_utils.troop_delta_log_types
+    logs_to_fetch = set(lg_utils.troop_delta_log_types)
     if not game_helper.details.capitols:
         logs_to_fetch.remove(9)
     if not game_helper.details.teamGame:
