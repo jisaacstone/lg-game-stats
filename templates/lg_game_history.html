@@ -45,9 +45,9 @@
                 for (i=0; i<rects.length; i++){
                     rects[i].setAttribute('width', w);
                 } 
-                $('th').not(':first-child').each(function(){
+                /*$('th,td').not(':first-child').each(function(){
                     $(this).css('color',colors[$(this).index() -1]);
-                });
+                });*/
                 // visibility toggle logic
                 $('path').toggle(function(){
                     $(this).hide()
@@ -66,6 +66,13 @@
                 });
             };
         </script>
+        <style type="text/css">
+            {% for color in colors %}
+            .eq{{ forloop.counter0 }}{
+                color: {{ color }}
+            }
+            {% endfor %}
+        </style>
   </head>
   <body>
     <header>
@@ -80,14 +87,14 @@
         <thead>
         <th> <span class="box_rotate">Turn</span> </th>
         {% for player in players %}
-            <th> <span class="box_rotate">{{ player }}</span> </th>
+            <th> <span class="box_rotate eq{{forloop.counter0}}">{{ player }}</span> </th>
         {% endfor %}
         </thead>
         {% for turn, data in totals.iteritems %}
         <tr>
         <td>{{ turn }}</td>
             {% for player, total in data.iteritems %}
-            <td>{{ total }}</td>
+            <td class="eq{{forloop.counter0}}">{{ total }}</td>
             {% endfor %}
         </tr>
         {% endfor %}
