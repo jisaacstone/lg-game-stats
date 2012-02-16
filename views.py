@@ -21,7 +21,11 @@ def game_history(HttpRequest):
         return render_to_response('lg_game_history.html',{'message':'welcome!'})
     
     auth_helper = lg_utils.AuthHelper(HttpRequest.session)
+
     game_helper = lg_utils.GameHelper(auth_helper.key, game)
+    if not game_helper.details:
+        return render_to_response('lg_game_history.html',{'message':"could not find game {0}".format(game)})
+
     log_helper = lg_utils.LogHelper(auth_helper.key, game)
     logs_to_fetch = set(lg_utils.troop_delta_log_types)
     if not game_helper.details.capitols:
@@ -37,7 +41,7 @@ def game_history(HttpRequest):
     except TypeError:
         return render_to_response('lg_game_history.html',{'message':log_data}) 
       
-    players = set((p['nickname'].split(' (')[0] for p in game_helper.details.players))
+    players = sorted(list((p['nickname'].split(' (')[0] for p in game_helper.details.players)))
     totals = dict(zip(history.keys(), (dict(zip(players, [0]*len(players))) for _ in history.keys())))
     graph_data = dict(zip(players, [[]]*len(players)))
     for turn, changes in history.iteritems():

@@ -15,6 +15,8 @@
                 
                 var x = [{% for t in totals.keys %}{{ t }}, {% endfor %}];
                 var l = [{% for p in graph_data.keys %}'{{ p }}', {% endfor %}];
+                var colors = ['firebrick','goldenrod','khaki','seagreen','steelblue','mediumturquoise','orchid','hotpink','indianred','lightsalmon','yellowgreen','olivedrab1','aquamarine3','azure3','cornflowerblue','blueviolet','red','orange','yellow','green','blue','cyan','purple']
+                var num_colors = colors.length
                 var y = {};
                 {% for player, data in graph_data.iteritems %}
                     y['{{ player }}'] = [{% for item in data %}{{ item }},{% endfor %}]; 
@@ -23,7 +25,8 @@
 
                 r.linechart(10, 10, 
                     800, 342, 
-                    x, [{% for player in players %}y['{{ player }}'],{% endfor %}]
+                    x, [{% for player in players %}y['{{ player }}'],{% endfor %}],
+                    {'colors':colors}
                 ).hoverColumn(function () {
                     this.tags = r.set();
                     for (var i = 0, ii = this.y.length; i < ii; i++) {
@@ -42,19 +45,22 @@
                 for (i=0; i<rects.length; i++){
                     rects[i].setAttribute('width', w);
                 } 
+                $('th').not(':first-child').each(function(){
+                    $(this).css('color',colors[$(this).index() -1]);
+                });
                 // visibility toggle logic
                 $('path').toggle(function(){
                     $(this).hide()
-                    $('th').eq($(this).index()-2).css('color', 'grey');
+                    $('th').eq($(this).index()-2).css('opacity', '0.3');
                 }, function(){
                     $(this).show()
-                    $('th').eq($(this).index()-2).css('color', 'black');
+                    $('th').eq($(this).index()-2).css('opacity', '1');
                 });
                 $('th').not(':first-child').find('span').click(function(){
                     $('path').eq($(this).parent().index()-1).click()
                 });
                 $('th').not(':first-child').find('span').hover(function(){
-                    $(this).css('text-shadow', '1px 1px 1px #DABA55')
+                    $(this).css('text-shadow', '1px 1px 1px #ABAAA5')
                 },function(){
                     $(this).css('text-shadow','none')
                 });
