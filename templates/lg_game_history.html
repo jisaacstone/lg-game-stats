@@ -14,7 +14,7 @@
                     txtattr = { font: "12px sans-serif" };
                 
                 var x = [{% for t in totals.keys %}{{ t }}, {% endfor %}];
-                var l = [{% for p in graph_data.keys %}'{{ p }}', {% endfor %}];
+                var l = [{% for p in players %}'{{ p }}', {% endfor %}];
                 var colors = [{% for c in colors %}'{{ c }}', {% endfor %}];
                 var num_colors = colors.length
                 var y = {};
@@ -25,7 +25,7 @@
 
                 r.linechart(10, 10, 
                     800, 342, 
-                    x, [{% for player in graph_data.keys %}y['{{ player }}'],{% endfor %}],
+                    x, [{% for player in players %}y['{{ player }}'],{% endfor %}],
                     {'colors':colors}
                 ).hoverColumn(function () {
                     this.tags = r.set();
@@ -87,14 +87,14 @@
         <thead>
         <th> <span class="box_rotate">Turn</span> </th>
         {% for player in players %}
-            <th> <span class="box_rotate eq{{forloop.counter0}}">{{ player }}</span> </th>
+            <th> <span class="box_rotate eq{{ forloop.counter0 }}">{{ player }}</span> </th>
         {% endfor %}
         </thead>
         {% for turn, data in totals.iteritems %}
         <tr>
         <td>{{ turn }}</td>
             {% for player, total in data.iteritems %}
-            <td class="eq{{forloop.counter0}}">{{ total }}</td>
+            <td class="eq{{ forloop.counter0 }}">{{ total }}</td>
             {% endfor %}
         </tr>
         {% endfor %}

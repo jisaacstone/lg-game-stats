@@ -65,7 +65,7 @@ def darken(color, decimal_max=200):
     if color[0] != "#":
         return color
     r,g,b = color[1:3],color[3:5],color[5:7]
-    bits = map(lambda x: hex(min(int(x,16),decimal_max))[2:], (r,g,b))
+    bits = map(lambda x: hex(min(int(x,16),decimal_max))[2:].zfill(2), (r,g,b))
     return "#"+"".join(bits)
 
 class AuthHelper(object):
