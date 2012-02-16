@@ -4,7 +4,7 @@ import re
 import sys
 
 troop_delta_log_types = set((1,2,8,9,12,13,15))
-name_re = '[\\w\\s_-]+'
+name_re = '[\\w\\s._-]+'
 borged_re = '[()[\\]\\w\\s,_-]*'
 territory_re = '[\\w\\s.-_]+'
 attack_re = "(?P<attacker>{0}){1}: Attacked (?P<defender>{0}){1} from {2} to {2}, result: atk\\[[\\d,]+\\], def\\[[\\d,]+\\] : atk (?P<lost>-\\d+), def (?P<killed>-\\d+)".format(name_re, borged_re, territory_re)
