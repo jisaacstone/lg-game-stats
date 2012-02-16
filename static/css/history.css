@@ -1,3 +1,6 @@
 table.data {
     margin-top: -12em;
     }
+th span{
+    cursor: pointer;
+}

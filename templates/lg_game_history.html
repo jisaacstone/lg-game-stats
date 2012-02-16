@@ -50,11 +50,13 @@
                     $(this).show()
                     $('th').eq($(this).index()-2).css('color', 'black');
                 });
-                $('th').not(':first-child').click(function(){$('path').eq($(this).index()-1).click()});
-                $('th').not(':first-child').hover(function(){
-                    $(this).find('span').css('text-decoration', 'underline')
+                $('th').not(':first-child').find('span').click(function(){
+                    $('path').eq($(this).parent().index()-1).click()
+                });
+                $('th').not(':first-child').find('span').hover(function(){
+                    $(this).css('text-shadow', '1px 1px 1px #DABA55')
                 },function(){
-                    $(this).find('span').css('text-decoration','none')
+                    $(this).css('text-shadow','none')
                 });
             };
         </script>
