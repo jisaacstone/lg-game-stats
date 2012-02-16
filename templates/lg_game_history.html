@@ -15,7 +15,7 @@
                 
                 var x = [{% for t in totals.keys %}{{ t }}, {% endfor %}];
                 var l = [{% for p in graph_data.keys %}'{{ p }}', {% endfor %}];
-                var colors = ['firebrick','goldenrod','khaki','seagreen','steelblue','mediumturquoise','orchid','hotpink','indianred','lightsalmon','yellowgreen','olivedrab1','aquamarine3','azure3','cornflowerblue','blueviolet','red','orange','yellow','green','blue','cyan','purple']
+                var colors = [{% for c in colors %}'{{ c }}', {% endfor %}];
                 var num_colors = colors.length
                 var y = {};
                 {% for player, data in graph_data.iteritems %}
@@ -25,7 +25,7 @@
 
                 r.linechart(10, 10, 
                     800, 342, 
-                    x, [{% for player in players %}y['{{ player }}'],{% endfor %}],
+                    x, [{% for player in graph_data.keys %}y['{{ player }}'],{% endfor %}],
                     {'colors':colors}
                 ).hoverColumn(function () {
                     this.tags = r.set();

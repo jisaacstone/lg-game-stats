@@ -25,6 +25,8 @@ def game_history(HttpRequest):
     game_helper = lg_utils.GameHelper(auth_helper.key, game)
     if not game_helper.details:
         return render_to_response('lg_game_history.html',{'message':"could not find game {0}".format(game)})
+    players_colors = dict(sorted(((p['nickname'].split(' (')[0], lg_utils.darken(p['color'])) for p in game_helper.details.players))) 
+    players = players_colors.keys()
 
     log_helper = lg_utils.LogHelper(auth_helper.key, game)
     logs_to_fetch = set(lg_utils.troop_delta_log_types)
@@ -41,7 +43,6 @@ def game_history(HttpRequest):
     except TypeError:
         return render_to_response('lg_game_history.html',{'message':log_data}) 
       
-    players = sorted(list((p['nickname'].split(' (')[0] for p in game_helper.details.players)))
     totals = dict(zip(history.keys(), (dict(zip(players, [0]*len(players))) for _ in history.keys())))
     graph_data = dict(zip(players, [[]]*len(players)))
     for turn, changes in history.iteritems():
@@ -63,7 +64,11 @@ def game_history(HttpRequest):
             for p, n in data.iteritems() 
             if p == player
         ]
-    return render_to_response('lg_game_history.html', {'totals': totals, 'players': players, 'graph_data': graph_data}) 
+    return render_to_response('lg_game_history.html', {
+        'totals': totals, 
+        'players': players_colors.keys(), 
+        'graph_data': graph_data,
+        'colors': players_colors.values()}) 
 
 def index(HttpRequest):
     try:

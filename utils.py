@@ -59,6 +59,15 @@ def filter_troop_delta(log):
 
     return []
 
+def darken(color, decimal_max=200):
+    """Darkens a css hex color code to a max of a given decimal value 
+    for each r,g,b channel"""
+    if color[0] != "#":
+        return color
+    r,g,b = color[1:3],color[3:5],color[5:7]
+    bits = map(lambda x: hex(min(int(x,16),decimal_max))[2:], (r,g,b))
+    return "#"+"".join(bits)
+
 class AuthHelper(object):
     api_url = 'http://landgrab.net/landgrab/services/AuthService?wsdl'
     
@@ -157,3 +166,6 @@ class GameHelper(object):
         self.game = game_number
         if self.game:
             self.details = self.client.service.getGameDetails(self.key, game_number)
+
+
+
