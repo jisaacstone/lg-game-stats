@@ -14,6 +14,7 @@
     <p>Enter a game number to see a {{ page }}</p>
     <form action="/landgrab/{{ page }}" method="get">
         <input type="text" name="game"></input>
+        {% if page == "history" %} <input type="checkbox" name="percent">percent</input> {% endif %}
         <input type="submit" value="go"></input>
     </form>
     {% endfor %}

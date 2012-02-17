@@ -20,6 +20,7 @@ def game_history(HttpRequest):
     except ValueError:
         return render_to_response('lg_game_history.html',{'message':'welcome!'})
     
+    percent = HttpRequest.GET.get('percent', None)
     auth_helper = lg_utils.AuthHelper(HttpRequest.session)
 
     game_helper = lg_utils.GameHelper(auth_helper.key, game)
@@ -58,13 +59,26 @@ def game_history(HttpRequest):
             for turn in history.keys():
                 if turn >= conquer['turn']:
                     totals[turn][conquer['players'][1]] = 0
-    for player in players:
-        graph_data[player] = [
-            math.log(n+1) if n>0 else 0.5 
-            for turn, data in totals.iteritems() 
-            for p, n in data.iteritems() 
-            if p == player
-        ]    
+    if percent:
+        t_old = dict(totals)
+        for turn, data in t_old.iteritems():
+            turn_total = sum(data.values())
+            totals[turn] = {p: round((v*100.0)/turn_total,2) for p,v in data.iteritems()}
+        for player in players:
+            graph_data[player] = [
+                n 
+                for turn, data in totals.iteritems() 
+                for p, n in data.iteritems() 
+                if p == player
+            ]    
+    else:
+        for player in players:
+            graph_data[player] = [
+                math.log(n+1) if n>0 else 0.5 
+                for turn, data in totals.iteritems() 
+                for p, n in data.iteritems() 
+                if p == player
+            ]    
     return render_to_response('lg_game_history.html', {
         'totals': totals, 
         'players': players,

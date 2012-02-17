@@ -77,11 +77,15 @@ class AuthHelper(object):
         else:    
             sys.path += ['constants']
             import constants
-            a_client = Client(self.api_url)
-            self.key = a_client.service.initiateSession(constants.LG_DEV_KEY)
+            self.client = Client(self.api_url)
+            self.key = self.client.service.initiateSession(constants.LG_DEV_KEY)
             if session:
                 session['session_key'] = self.key
                 session.set_expiry(60*60*2)
+
+    def login(self, username, md5_password):
+        self.client.service.authenticateUser(self.key, username, md5_password, False)
+        return True
 
 class LogHelper(object):
     """methods for retrieveing and sorting logs from the landgrab api"""
@@ -166,6 +170,3 @@ class GameHelper(object):
         self.game = game_number
         if self.game:
             self.details = self.client.service.getGameDetails(self.key, game_number)
-
-
-
